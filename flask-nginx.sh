@@ -46,13 +46,24 @@ server{
         server_name  shoppingcard.online;
         error_page   500 502 503 504  /50x.html;
 
+        #   指定允许跨域的方法，*代表所有
+        add_header Access-Control-Allow-Methods \*;
+        #   预检命令的缓存，如果不缓存每次会发送两次请求
+        add_header Access-Control-Max-Age 3600;
+        #   不带cookie请求，并设置为false
+        add_header Access-Control-Allow-Credentials false;
+        #   表示允许这个域跨域调用（客户端发送请求的域名和端口） 
+        #   \$http_origin动态获取请求客户端请求的域   不用*的原因是带cookie的请求不支持*号
+        add_header Access-Control-Allow-Origin \$http_origin;
+        #   表示请求头的字段 动态获取
+        add_header Access-Control-Allow-Headers 
+        \$http_access_control_request_headers;
+
         location / {
                 proxy_pass      http://38.54.94.49:5000;
-                proxy_redirect off;
-                proxy_set_header   Host             \$host;
-                proxy_set_header   X-Real-IP        \$remote_addr;
-                proxy_set_header   X-Forwarded-For  \$proxy_add_x_forwarded_for;
-                chunked_transfer_encoding       off;
+                if (\$request_method = 'OPTIONS') {
+        		    return 204;
+    		    }
         }
 
 }
